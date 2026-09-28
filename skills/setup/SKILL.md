@@ -13,6 +13,21 @@ Work through the phases below in order. Tell the user roughly where they are
 ("Phase 3 of 8 — keywords"). Do not create any rule or criterion before
 phase 7, when the user has approved the full setup sheet.
 
+## Resources in this skill's folder
+
+- `packs/` — starter packs for common goals: `security-incidents.md`,
+  `brand-mentions.md`, `regional-news.md`, `crypto-markets.md`,
+  `deals-marketplaces.md`, `jobs-opportunities.md`, `research-releases.md`.
+  Each has extra interview options, seed vocabulary, typical noise, rule
+  groups and an example criterion. Read the ones matching the user's goal in
+  phase 2. They are starting points to adapt, never a script — the user's
+  answers and real messages override them.
+- `keyword-engineering.md` — the method for phase 5.
+- `data/language-patterns.md` — tested regex building blocks for Arabic,
+  Persian, Hebrew, Russian and more.
+- `data/country-names/<lang>.tsv` — every country's name in 18 languages,
+  from Unicode CLDR.
+
 Many users don't know exactly what they want. That is normal, and it is your
 job to find out — from their channels, from real messages, and from their
 reactions to concrete examples — not to make them specify everything in the
@@ -67,7 +82,9 @@ One or two rounds. Cover:
    mentions of an organization, person or brand · incidents in a field or
    region · a topic or research area · deals, listings or prices · jobs or
    opportunities · community moderation · "Not sure — look at my channels and
-   suggest". Their answer is the backbone of the criteria.
+   suggest". Their answer is the backbone of the criteria. Read the matching
+   starter packs now and use their extra interview options in the next
+   rounds. If no pack fits, build the options yourself the same way.
 2. **Role.** Who is reading the alerts — analyst, journalist, researcher,
    trader, recruiter, founder, moderator, other. It tells you what "useful"
    means to them.

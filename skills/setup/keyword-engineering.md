@@ -37,8 +37,10 @@ People write differently from how requirements are phrased. Before drafting:
 
 ## 2. Expand every concept
 
-For each concept (a name, a topic, an event type), build the full set of ways
-it is written:
+Start from the seed vocabulary in the matching starter packs (`packs/`), and
+for countries in scope take every language's name from
+`data/country-names/<lang>.tsv`. Then, for each concept (a name, a topic, an
+event type), build the full set of ways it is written:
 
 - synonyms and near-synonyms; formal and informal terms;
 - abbreviations, acronyms, codes and tickers, with and without dots;
@@ -60,7 +62,9 @@ volume each adds.
 
 ## 3. Language checks
 
-Apply every section that matches a language in the sources.
+Apply every section that matches a language in the sources. Ready-made,
+tested patterns for these are in `data/language-patterns.md` — use them
+rather than writing letter classes from scratch.
 
 **Arabic**
 - Attached prefixes: و ف ب ك ل and ال, alone or combined (وال، بال، فال،

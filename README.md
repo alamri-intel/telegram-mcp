@@ -258,3 +258,8 @@ rejected alerts by default; pass `include_irrelevant=True` to audit them.
 ## License
 
 MIT
+
+Country names in `skills/setup/data/country-names/` come from the
+[Unicode CLDR](https://cldr.unicode.org/) project, © Unicode, Inc., under the
+Unicode License v3 (included alongside the data). Regenerate them with
+`python3 scripts/build_country_names.py`.
