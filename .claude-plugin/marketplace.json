@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "telegram-monitor-dev",
+  "description": "Internal distribution for the Telegram monitoring plugin.",
+  "owner": {
+    "name": "Abdul Alamri"
+  },
+  "plugins": [
+    {
+      "name": "telegram-monitor",
+      "description": "Monitor your Telegram channels: regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria.",
+      "author": {
+        "name": "Abdul Alamri"
+      },
+      "category": "productivity",
+      "source": "./"
+    }
+  ]
+}

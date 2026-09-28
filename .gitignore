@@ -1,0 +1,11 @@
+*.session
+*.session-journal
+*.db
+*.db-wal
+*.db-shm
+.venv/
+__pycache__/
+dist/
+build/
+*.egg-info/
+.env

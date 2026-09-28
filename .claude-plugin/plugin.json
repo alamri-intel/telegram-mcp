@@ -1,0 +1,6 @@
+{
+  "name": "telegram-monitor",
+  "description": "Monitor your Telegram channels. Regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria. Set up with /telegram-monitor:setup.",
+  "version": "0.1.0",
+  "keywords": ["telegram", "monitoring", "alerting", "filtering", "mcp"]
+}
