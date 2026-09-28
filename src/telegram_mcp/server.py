@@ -128,7 +128,8 @@ async def auth_status() -> dict:
 async def connect_telegram(ctx: Context) -> dict:
     """Log in to Telegram through popup forms. The easiest way to set up.
 
-    Asks the user, in forms the app shows them, for the app credentials (only
+    Uses the app's own forms when it supports them, otherwise native macOS
+    dialog boxes. Asks the user for the app credentials (only
     if not saved yet), their phone number, each login code, and their 2FA
     password if they have one. None of these pass through the conversation,
     so do not ask the user for them in chat. Logs in both sessions: 'mcp'
@@ -139,7 +140,13 @@ async def connect_telegram(ctx: Context) -> dict:
     those instructions instead.
     """
     params = ctx.session.client_params
-    if not (params and params.capabilities.elicitation):
+    if params and params.capabilities.elicitation:
+        async def ask(message, schema):
+            result = await ctx.elicit(message, schema)
+            return result.data if result.action == "accept" else None
+    elif connect.native_dialogs_available():
+        ask = connect.native_ask
+    else:
         return {
             "ok": False,
             "fallback": "This app can't show login forms, so log in through the "
@@ -147,10 +154,6 @@ async def connect_telegram(ctx: Context) -> dict:
                         "login_submit_code for session='mcp', and again for "
                         "session='watcher'.",
         }
-
-    async def ask(message, schema):
-        result = await ctx.elicit(message, schema)
-        return result.data if result.action == "accept" else None
 
     return await connect.run(ask, [SESSION_NAME, WATCHER_SESSION_NAME])
 

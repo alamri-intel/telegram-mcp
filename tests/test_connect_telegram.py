@@ -135,7 +135,9 @@ def test_result_never_repeats_secrets(telegram):
         assert secret not in result
 
 
-def test_client_without_forms_is_told_to_use_the_chat_login(telegram):
+def test_client_without_forms_is_told_to_use_the_chat_login(telegram, monkeypatch):
+    from telegram_mcp import connect
+    monkeypatch.setattr(connect, "native_dialogs_available", lambda: False)
     result = run_tool(None)
 
     assert result["ok"] is False

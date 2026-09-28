@@ -4,6 +4,9 @@ Credentials, codes and the 2FA password go from the form straight to this
 server, so they never appear in the conversation.
 """
 
+import asyncio
+import shutil
+import sys
 from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
@@ -35,6 +38,57 @@ class Code(BaseModel):
 
 class Password(BaseModel):
     password: str = Field(description="Your Telegram two-step verification password")
+
+
+SECRET_FIELDS = {"api_hash", "password"}
+DIALOG_TIMEOUT_SECONDS = 300
+_GAVE_UP = "__telegram_osint_dialog_gave_up__"
+
+# The prompt arrives as an argument, never spliced into the script, so no
+# message text can inject AppleScript.
+_DIALOG_SCRIPT = [
+    "on run argv",
+    "activate",
+    'set reply to display dialog (item 1 of argv) default answer "" '
+    'with title "Telegram OSINT" buttons {"Cancel", "OK"} default button "OK" '
+    'hidden answer ((item 2 of argv) is "true") '
+    "giving up after ((item 3 of argv) as integer)",
+    'if gave up of reply then return "' + _GAVE_UP + '"',
+    "return text returned of reply",
+    "end run",
+]
+
+
+def native_dialogs_available() -> bool:
+    """Whether this machine can show macOS dialog boxes for the login."""
+    return sys.platform == "darwin" and shutil.which("osascript") is not None
+
+
+async def run_dialog(prompt: str, hidden: bool) -> str | None:
+    """Show one macOS dialog box; None if cancelled, timed out or empty."""
+    args = [arg for line in _DIALOG_SCRIPT for arg in ("-e", line)]
+    proc = await asyncio.create_subprocess_exec(
+        "osascript", *args, prompt, "true" if hidden else "false",
+        str(DIALOG_TIMEOUT_SECONDS),
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+    )
+    out, _ = await proc.communicate()
+    if proc.returncode != 0:
+        return None
+    answer = out.decode().rstrip("\n")
+    return None if answer in ("", _GAVE_UP) else answer
+
+
+async def native_ask(message: str, schema: type[T]) -> T | None:
+    """Ask for each field of `schema` in its own dialog box, secrets hidden."""
+    values = {}
+    for name, field in schema.model_fields.items():
+        answer = await run_dialog(f"{message}\n\n{name}: {field.description}",
+                                  name in SECRET_FIELDS)
+        if answer is None:
+            return None
+        values[name] = answer.strip()
+    return schema(**values)
 
 
 def _cancelled() -> dict:

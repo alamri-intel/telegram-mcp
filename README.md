@@ -29,8 +29,9 @@ Telegram's API and, if you enable judging, Anthropic's.
   sent anywhere.
 - **Login forms.** `connect_telegram` asks for your Telegram app
   credentials, phone number, login codes and two-step verification password
-  in popup forms your Claude app shows (MCP elicitation). The answers go
-  straight to the local server, not into the conversation. The password is
+  in popup forms your Claude app shows (MCP elicitation), or, in apps without
+  forms on macOS, in native dialog boxes opened with `osascript`. The answers
+  go straight to the local server, not into the conversation. The password is
   passed to Telegram once to sign in and is never stored.
 - **Local files.** Session files, your API credentials (`.env`, mode
   `0600`), the alerts database, and the watcher log live in
@@ -175,7 +176,7 @@ create it.
 | Tool | |
 |---|---|
 | `auth_status()` | Whether credentials are saved and each session is logged in. |
-| `connect_telegram()` | Log in both sessions through popup forms, keeping keys and codes out of the chat. Apps that can't show forms get told to use the tools below instead. |
+| `connect_telegram()` | Log in both sessions through popups — the app's forms, or macOS dialog boxes — keeping keys and codes out of the chat. Elsewhere it points to the tools below. |
 | `set_api_credentials(api_id, api_hash)` | Save your Telegram app credentials to `~/.telegram-mcp/.env` (mode `0600`). |
 | `login_request_code(phone)` | Ask Telegram to send a login code. |
 | `login_submit_code(code, password)` | Finish login; the session file is saved locally. |
