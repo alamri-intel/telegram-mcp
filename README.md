@@ -45,8 +45,9 @@ Telegram's API and, if you enable judging, Anthropic's.
 ## Install
 
 **Requires [uv](https://docs.astral.sh/uv/).** It provisions the right Python
-version itself, so you don't need to manage one:
-`curl -LsSf https://astral.sh/uv/install.sh | sh`
+version itself, so you don't need to manage one. On macOS, `brew install uv`;
+for other systems, see uv's
+[installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 As a Claude Code plugin — this is the easy path, and gives you the setup skill:
 
