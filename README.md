@@ -16,8 +16,6 @@ Telegram's API and, if you enable judging, Anthropic's.
 
 ## Install
 
-> Not published yet — installed from a checkout while it's being tested.
-
 **Requires [uv](https://docs.astral.sh/uv/).** It provisions the right Python
 version itself, so you don't need to manage one:
 `curl -LsSf https://astral.sh/uv/install.sh | sh`
@@ -25,10 +23,12 @@ version itself, so you don't need to manage one:
 As a Claude Code plugin — this is the easy path, and gives you the setup skill:
 
 ```bash
-git clone <repo-url> ~/telegram-monitor
-claude plugin marketplace add ~/telegram-monitor
-claude plugin install telegram-monitor@telegram-monitor-dev
+claude plugin marketplace add alamri-intel/telegram-mcp
+claude plugin install telegram-monitor@telegram-monitor
 ```
+
+Or from inside Claude Code: `/plugin marketplace add alamri-intel/telegram-mcp`,
+then `/plugin install telegram-monitor@telegram-monitor`.
 
 Start a new session, then run `/telegram-monitor:setup` and answer the
 questions — it writes your rules and criteria for you.
@@ -36,7 +36,7 @@ questions — it writes your rules and criteria for you.
 Or as a plain Python package, if you'd rather not use the plugin:
 
 ```bash
-pip install -e "path/to/telegram-monitor[judge]"
+uv tool install "telegram-monitor-mcp[judge] @ git+https://github.com/alamri-intel/telegram-mcp"
 claude mcp add telegram -- telegram-mcp
 ```
 

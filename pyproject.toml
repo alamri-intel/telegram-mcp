@@ -9,6 +9,7 @@ description = "MCP server for your own Telegram account: read chats, and monitor
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "Abdul Alamri" }]
 keywords = ["mcp", "telegram", "monitoring", "alerting", "claude"]
 classifiers = [
     "Development Status :: 3 - Alpha",
