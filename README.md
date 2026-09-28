@@ -1,4 +1,4 @@
-# telegram-monitor-mcp
+# Telegram OSINT
 
 An MCP server for your own Telegram account. Read your chats through an AI
 assistant, and run a background monitor that watches every incoming message
@@ -14,6 +14,34 @@ becomes an alert.
 Everything runs locally. Nothing leaves your machine except calls to
 Telegram's API and, if you enable judging, Anthropic's.
 
+## What it runs and sends
+
+- **Local server.** The plugin starts a Python MCP server on your computer
+  with `uv run --locked`. On first start, uv downloads Python and the exact
+  package versions pinned in `uv.lock` from PyPI.
+- **Telegram.** The server and the watcher log in to *your* Telegram
+  account (a user session, not a bot) and talk to Telegram's servers to
+  list chats, read and search messages, and receive new ones. Nothing is
+  ever sent, deleted, or left on Telegram — there are no write tools.
+- **Anthropic.** Only when judging is on and `ANTHROPIC_API_KEY` is set, the
+  watcher sends the text of each rule-matched message, plus your criteria,
+  to Anthropic's API for a verdict. Messages that match no rule are never
+  sent anywhere.
+- **Local files.** Session files, your API credentials (`.env`, mode
+  `0600`), the alerts database, and the watcher log live in
+  `~/.telegram-mcp/`. Nothing is uploaded elsewhere.
+- **Background watcher.** A separate process you start yourself; the plugin
+  never starts it for you. On macOS it can show desktop notifications via
+  `osascript`.
+
+## Where it works
+
+| Claude app | Works |
+|---|---|
+| Claude Code (terminal, IDE, desktop app Code tab) | Yes |
+| Cowork in the desktop app, on your computer | Yes |
+| Chat on claude.ai web, desktop, or mobile | Skills only — chat can't start a local server, so the Telegram tools aren't available |
+
 ## Install
 
 **Requires [uv](https://docs.astral.sh/uv/).** It provisions the right Python
@@ -24,13 +52,13 @@ As a Claude Code plugin — this is the easy path, and gives you the setup skill
 
 ```bash
 claude plugin marketplace add alamri-intel/telegram-mcp
-claude plugin install telegram-monitor@telegram-monitor
+claude plugin install telegram-osint@telegram-osint
 ```
 
 Or from inside Claude Code: `/plugin marketplace add alamri-intel/telegram-mcp`,
-then `/plugin install telegram-monitor@telegram-monitor`.
+then `/plugin install telegram-osint@telegram-osint`.
 
-Start a new session, then run `/telegram-monitor:setup` and answer the
+Start a new session, then run `/telegram-osint:setup` and answer the
 questions — it writes your rules and criteria for you.
 
 Or as a plain Python package, if you'd rather not use the plugin:
@@ -118,15 +146,26 @@ never logged in — they only read the local database.
 
 **Skills** (plugin install only)
 
-`/telegram-monitor:setup` interviews you about what you watch for and writes the
-rules and criteria. `/telegram-monitor:watcher` covers starting the daemon and
+`/telegram-osint:setup` interviews you about what you watch for and writes the
+rules and criteria. `/telegram-osint:watcher` covers starting the daemon and
 working out why alerts aren't arriving.
 
 **Reading** — talks to Telegram
 
-`list_dialogs`, `read_messages`, `search_messages`, `unread_summary`.
-`list_dialogs` is how you find the numeric chat ids for rule scopes;
-`search_messages` searches history, which rules never see.
+`list_dialogs`, `read_messages`, `search_messages`, `unread_summary`,
+`preview_rule`. `list_dialogs` is how you find the numeric chat ids for rule
+scopes; `search_messages` searches history, which rules never see;
+`preview_rule` tests a candidate rule against real message history before you
+create it.
+
+**Login** — sets up your Telegram session
+
+| Tool | |
+|---|---|
+| `auth_status()` | Whether credentials are saved and each session is logged in. |
+| `set_api_credentials(api_id, api_hash)` | Save your Telegram app credentials to `~/.telegram-mcp/.env` (mode `0600`). |
+| `login_request_code(phone)` | Ask Telegram to send a login code. |
+| `login_submit_code(code, password)` | Finish login; the session file is saved locally. |
 
 ## Rules and criteria
 

@@ -2,7 +2,7 @@
   "mcpServers": {
     "telegram": {
       "command": "uv",
-      "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}", "--quiet", "telegram-mcp"]
+      "args": ["run", "--locked", "--directory", "${CLAUDE_PLUGIN_ROOT}", "--quiet", "telegram-mcp"]
     }
   }
 }

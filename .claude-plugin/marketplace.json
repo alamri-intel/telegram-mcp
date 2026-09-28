@@ -1,14 +1,15 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "telegram-monitor",
-  "description": "Telegram monitoring plugin for Claude Code, published by Abdul Alamri.",
+  "name": "telegram-osint",
+  "description": "Telegram OSINT plugin for Claude Code, published by Abdul Alamri.",
   "owner": {
     "name": "Abdul Alamri",
     "url": "https://github.com/alamri-intel"
   },
   "plugins": [
     {
-      "name": "telegram-monitor",
+      "name": "telegram-osint",
+      "displayName": "Telegram OSINT",
       "description": "Monitor your Telegram channels: regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria.",
       "author": {
         "name": "Abdul Alamri",

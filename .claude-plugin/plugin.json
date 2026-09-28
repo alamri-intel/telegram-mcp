@@ -1,7 +1,8 @@
 {
-  "name": "telegram-monitor",
-  "description": "Monitor your Telegram channels. Regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria. Set up with /telegram-monitor:setup.",
-  "version": "0.1.0",
+  "name": "telegram-osint",
+  "displayName": "Telegram OSINT",
+  "description": "Monitor your Telegram channels. Regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria. Set up with /telegram-osint:setup.",
+  "version": "0.1.1",
   "author": {
     "name": "Abdul Alamri",
     "url": "https://github.com/alamri-intel"
@@ -9,5 +10,5 @@
   "homepage": "https://github.com/alamri-intel/telegram-mcp",
   "repository": "https://github.com/alamri-intel/telegram-mcp",
   "license": "MIT",
-  "keywords": ["telegram", "monitoring", "alerting", "filtering", "mcp"]
+  "keywords": ["telegram", "osint", "monitoring", "alerting", "filtering", "mcp"]
 }
