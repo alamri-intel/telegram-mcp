@@ -128,8 +128,8 @@ async def auth_status() -> dict:
 async def connect_telegram(ctx: Context) -> dict:
     """Log in to Telegram through popup forms. The easiest way to set up.
 
-    Uses the app's own forms when it supports them, otherwise native macOS
-    dialog boxes. Asks the user for the app credentials (only
+    Uses the app's own forms when it supports them, otherwise native dialog
+    boxes on macOS, Windows or Linux. Asks the user for the app credentials (only
     if not saved yet), their phone number, each login code, and their 2FA
     password if they have one. None of these pass through the conversation,
     so do not ask the user for them in chat. Logs in both sessions: 'mcp'

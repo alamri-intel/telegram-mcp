@@ -1,10 +1,12 @@
-"""Telegram login through form popups the Claude app shows the user.
+"""Telegram login through popups: the Claude app's own forms, or native
+dialog boxes (macOS, Windows, Linux with zenity) where the app has none.
 
-Credentials, codes and the 2FA password go from the form straight to this
+Credentials, codes and the 2FA password go from the popup straight to this
 server, so they never appear in the conversation.
 """
 
 import asyncio
+import os
 import shutil
 import sys
 from collections.abc import Awaitable, Callable
@@ -44,8 +46,10 @@ SECRET_FIELDS = {"api_hash", "password"}
 DIALOG_TIMEOUT_SECONDS = 300
 _GAVE_UP = "__telegram_osint_dialog_gave_up__"
 
-# The prompt arrives as an argument, never spliced into the script, so no
-# message text can inject AppleScript.
+# In every backend the prompt travels as an argument or environment variable,
+# never spliced into a script, so no message text can inject commands.
+
+# macOS
 _DIALOG_SCRIPT = [
     "on run argv",
     "activate",
@@ -59,23 +63,85 @@ _DIALOG_SCRIPT = [
 ]
 
 
+# Windows: a small Windows Forms dialog, with a timer that closes it.
+_POWERSHELL_SCRIPT = "\n".join([
+    "Add-Type -AssemblyName System.Windows.Forms",
+    "[Console]::OutputEncoding = [Text.Encoding]::UTF8",
+    "$f = New-Object Windows.Forms.Form",
+    "$f.Text = 'Telegram OSINT'; $f.Width = 480; $f.Height = 230",
+    "$f.StartPosition = 'CenterScreen'; $f.TopMost = $true",
+    "$f.FormBorderStyle = 'FixedDialog'; $f.MaximizeBox = $false; $f.MinimizeBox = $false",
+    "$l = New-Object Windows.Forms.Label; $l.Text = $env:TELEGRAM_OSINT_PROMPT",
+    "$l.SetBounds(12, 12, 440, 100)",
+    "$t = New-Object Windows.Forms.TextBox; $t.SetBounds(12, 116, 440, 24)",
+    "$t.UseSystemPasswordChar = ($env:TELEGRAM_OSINT_HIDDEN -eq '1')",
+    "$ok = New-Object Windows.Forms.Button; $ok.Text = 'OK'; $ok.DialogResult = 'OK'",
+    "$ok.SetBounds(296, 152, 75, 26)",
+    "$no = New-Object Windows.Forms.Button; $no.Text = 'Cancel'; $no.DialogResult = 'Cancel'",
+    "$no.SetBounds(377, 152, 75, 26)",
+    "$f.AcceptButton = $ok; $f.CancelButton = $no",
+    "$f.Controls.AddRange(@($l, $t, $ok, $no))",
+    "$timer = New-Object Windows.Forms.Timer",
+    "$timer.Interval = [int]$env:TELEGRAM_OSINT_TIMEOUT * 1000",
+    "$timer.Add_Tick({ $f.Close() }); $timer.Start()",
+    "if ($f.ShowDialog() -eq 'OK') { [Console]::Out.Write($t.Text); exit 0 } else { exit 1 }",
+])
+
+
+def dialog_backend() -> str | None:
+    """The dialog tool this machine can show login popups with, if any."""
+    if sys.platform == "darwin" and shutil.which("osascript"):
+        return "osascript"
+    if sys.platform == "win32" and shutil.which("powershell"):
+        return "powershell"
+    has_display = os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")
+    if sys.platform.startswith("linux") and has_display and shutil.which("zenity"):
+        return "zenity"
+    return None
+
+
 def native_dialogs_available() -> bool:
-    """Whether this machine can show macOS dialog boxes for the login."""
-    return sys.platform == "darwin" and shutil.which("osascript") is not None
+    return dialog_backend() is not None
 
 
-async def run_dialog(prompt: str, hidden: bool) -> str | None:
-    """Show one macOS dialog box; None if cancelled, timed out or empty."""
-    args = [arg for line in _DIALOG_SCRIPT for arg in ("-e", line)]
+def dialog_command(backend: str, prompt: str, hidden: bool) -> tuple[list[str], dict]:
+    """The command line and environment that show one dialog."""
+    env = dict(os.environ)
+    if backend == "osascript":
+        args = [arg for line in _DIALOG_SCRIPT for arg in ("-e", line)]
+        return (["osascript", *args, prompt, "true" if hidden else "false",
+                 str(DIALOG_TIMEOUT_SECONDS)], env)
+    if backend == "powershell":
+        env.update(TELEGRAM_OSINT_PROMPT=prompt,
+                   TELEGRAM_OSINT_HIDDEN="1" if hidden else "0",
+                   TELEGRAM_OSINT_TIMEOUT=str(DIALOG_TIMEOUT_SECONDS))
+        return (["powershell", "-NoProfile", "-NonInteractive", "-STA",
+                 "-Command", _POWERSHELL_SCRIPT], env)
+    if backend == "zenity":
+        argv = ["zenity", "--entry", "--title=Telegram OSINT", f"--text={prompt}",
+                f"--timeout={DIALOG_TIMEOUT_SECONDS}"]
+        return (argv + ["--hide-text"] if hidden else argv, env)
+    raise ValueError(f"unknown dialog backend {backend!r}")
+
+
+async def _exec(argv: list[str], env: dict) -> tuple[int, str]:
     proc = await asyncio.create_subprocess_exec(
-        "osascript", *args, prompt, "true" if hidden else "false",
-        str(DIALOG_TIMEOUT_SECONDS),
+        *argv, env=env,
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
     )
     out, _ = await proc.communicate()
-    if proc.returncode != 0:
+    return proc.returncode, out.decode("utf-8", errors="replace")
+
+
+async def run_dialog(prompt: str, hidden: bool) -> str | None:
+    """Show one dialog box; None if cancelled, timed out or left empty."""
+    backend = dialog_backend()
+    if backend is None:
         return None
-    answer = out.decode().rstrip("\n")
+    code, out = await _exec(*dialog_command(backend, prompt, hidden))
+    if code != 0:
+        return None
+    answer = out.lstrip("﻿").rstrip("\r\n")
     return None if answer in ("", _GAVE_UP) else answer
 
 

@@ -30,7 +30,8 @@ Telegram's API and, if you enable judging, Anthropic's.
 - **Login forms.** `connect_telegram` asks for your Telegram app
   credentials, phone number, login codes and two-step verification password
   in popup forms your Claude app shows (MCP elicitation), or, in apps without
-  forms on macOS, in native dialog boxes opened with `osascript`. The answers
+  forms, in your computer's own dialog boxes: `osascript` on macOS, a Windows
+  Forms dialog through PowerShell on Windows, `zenity` on Linux. The answers
   go straight to the local server, not into the conversation. The password is
   passed to Telegram once to sign in and is never stored.
 - **Local files.** Session files, your API credentials (`.env`, mode
@@ -47,6 +48,15 @@ Telegram's API and, if you enable judging, Anthropic's.
 | Claude Code (terminal, IDE, desktop app Code tab) | Yes |
 | Cowork in the desktop app | Yes, when the task runs **on your computer** — not in a cloud task |
 | Chat on claude.ai web, desktop, or mobile | Skills only — chat can't start a local server, so the Telegram tools aren't available |
+
+**Operating systems.** Developed and tested on macOS. On Windows and Linux the
+tools, login and monitoring work, with differences:
+
+- Login popups on Windows use PowerShell and on Linux need `zenity`; both are
+  newer and less tested than the macOS dialogs. Without them, login falls
+  back to the chat.
+- Desktop notifications are macOS-only. Elsewhere alerts are still recorded
+  and listed; they just don't pop up.
 
 ## Install
 

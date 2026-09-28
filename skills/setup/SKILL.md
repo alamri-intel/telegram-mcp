@@ -67,10 +67,10 @@ abstract.
 
 Call `auth_status`. If either session is not logged in, call
 `connect_telegram`. It collects the app credentials, phone number, login codes
-and 2FA password in popups — the app's own forms, or macOS dialog boxes where
-the app has none — so **never ask for any of these in chat**. Tell the user
-before calling it that popups are about to appear, and that on a Mac they may
-open behind other windows. If
+and 2FA password in popups — the app's own forms, or the computer's own dialog
+boxes (macOS, Windows, Linux) where the app has none — so **never ask for any
+of these in chat**. Tell the user before calling it that popups are about to
+appear, one field at a time, and that they may open behind other windows. If
 the user has no app credentials yet, tell them to get an API ID and hash from
 https://my.telegram.org (API development tools) first. If `connect_telegram`
 returns a `fallback`, this app can't show forms: follow its instructions.
