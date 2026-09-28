@@ -1,128 +1,216 @@
 ---
 name: setup
-description: Set up Telegram monitoring — interview the user about what they watch for, then create the rules and criteria. Use on first run, or when the user wants to change what they are monitoring.
+description: Set up Telegram OSINT monitoring — connect Telegram, interview the user in depth (even when they aren't sure what they need), engineer and test keyword rules against their real channels, calibrate the judge's criteria on real messages, then create everything. Use on first run, or when the user wants to rebuild or substantially change what the Telegram OSINT plugin monitors.
 ---
 
-# Setting up Telegram monitoring
+# Setting up Telegram OSINT monitoring
 
-Your job is to turn "I want to monitor Telegram" into a working set of rules and
-criteria. Interview first, then write. Do not create anything until the user has
-seen it and agreed.
+Your job is to turn "I want to monitor Telegram" into a professional setup that
+needs almost no editing afterwards. That takes time and effort up front, and
+that is the point: a rushed setup means weeks of noise or silent misses.
 
-## Connect first
+Work through the phases below in order. Tell the user roughly where they are
+("Phase 3 of 8 — keywords"). Do not create any rule or criterion before
+phase 7, when the user has approved the full setup sheet.
 
-Testing rules needs a logged-in session, so start here. Call `auth_status`; if
-either session is not authorized, call `connect_telegram`. It shows the user
-popup forms for their app credentials, phone number, login codes and 2FA
-password, so **never ask for any of these in chat** — the forms keep them out
-of the conversation. If they don't have app credentials yet, tell them to get
-an API ID and hash from https://my.telegram.org (API development tools) first.
+Many users don't know exactly what they want. That is normal, and it is your
+job to find out — from their channels, from real messages, and from their
+reactions to concrete examples — not to make them specify everything in the
+abstract.
 
-If `connect_telegram` returns a `fallback`, this app can't show forms: follow
-its instructions and use the step-by-step login tools instead.
+## How to ask
 
-## How the two stages differ
+- If you have a tool for multiple-choice questions, use it for every question
+  in this interview. It usually allows only a few questions per call and a few
+  options each, so run **several short rounds** rather than one huge form.
+  Otherwise ask in conversation, two or three questions at a time.
+- Write options specific to what you already know about the user, never
+  generic filler. Use multi-select wherever more than one answer can apply.
+- The user can always choose one of three helpers, on any question:
+  - **Suggest for me** — propose a concrete answer from what you know (their
+    channels, earlier answers, the sample messages), say why in one line, and
+    ask them to confirm. Record it as an assumption you made (phase 6 lists
+    them all).
+  - **Widen coverage** — go beyond what they listed: related topics, more
+    names and aliases, other languages and spellings, adjacent channels in
+    their list. Show what you would add as a multi-select so they keep
+    control, and say what it costs in volume.
+  - **Describe it in my own words** — let them explain freely, then restate it
+    as concrete answers ("So: X, Y, not Z — right?") and confirm before moving
+    on. Treat their words as the source of truth over any option you offered.
+- Put these helpers as options on the questions where they matter most (goal,
+  topics, names, sources, noise). Where option slots run out, end the round
+  with one extra question — **How should I continue?** · Looks right, next ·
+  Suggest for me · Widen coverage · Let me describe it — the free-text answer
+  covers "describe". Offer it after every round, so help is always one click
+  away.
+- Skip anything they have already told you. Never ask the same thing twice.
+- Keep each option short and plain. Avoid jargon like "regex" or "criteria" in
+  options; say "keywords" and "what counts as important".
 
-Get this distinction right, because the whole setup depends on it:
+## Phase 1 — Connect
 
-- **Rules** are cheap string matching (`substring`, `word`, `regex`). They run on
-  every incoming message and decide what is worth an API call. They should be
-  **broad** — a rule that misses something means it is never judged at all.
-- **Criteria** are plain language. Claude judges every rule hit against them and
-  decides what actually reaches the user. They should be **strict**.
+Call `auth_status`. If either session is not logged in, call
+`connect_telegram`. It collects the app credentials, phone number, login codes
+and 2FA password in popup forms, so **never ask for any of these in chat**. If
+the user has no app credentials yet, tell them to get an API ID and hash from
+https://my.telegram.org (API development tools) first. If `connect_telegram`
+returns a `fallback`, this app can't show forms: follow its instructions.
 
-Broad rules, strict criteria. Users get this backwards and write narrow rules
-with vague criteria, which is the worst combination: they miss things *and* get
-noise. If the user proposes that, say so.
+Nothing else works until this does — phases 3 to 5 read real messages.
 
-## The interview
+## Phase 2 — Goal and context
 
-If you have a tool for asking the user multiple-choice questions, use it:
-offer a few concrete suggested answers for each question, and let them write
-their own. Otherwise ask in conversation, two or three at a time. Either way,
-adapt — skip what they have already told you.
+One or two rounds. Cover:
 
-1. **What are you watching, and why?** Their domain, in their words — a job
-   market, a research field, a product ecosystem, a region, a community. This
-   becomes the substance of the criteria.
-2. **What would make you drop everything?** The alert they never want to miss.
-   This is the highest-severity criterion.
-3. **What are you sick of seeing?** The most important question, and the one
-   users never answer unprompted. Criteria that say what does *not* qualify are
-   what make the judge worth running. Push for specifics — "reposts", "job ads
-   for other cities", "price speculation", "announcements with no release date",
-   "people asking the same beginner question".
-4. **Any specific names?** Companies, people, products, handles, places. These
-   often become their own rule plus a criterion.
-5. **Everything, or specific chats?** If they only care about some channels, call
-   `list_dialogs` to get the ids and scope the rules with `chat_ids`. If they are
-   not sure, leave it unscoped — the judge handles the volume.
+1. **Goal.** Offer starting points and let them pick one or more:
+   mentions of an organization, person or brand · incidents in a field or
+   region · a topic or research area · deals, listings or prices · jobs or
+   opportunities · community moderation · "Not sure — look at my channels and
+   suggest". Their answer is the backbone of the criteria.
+2. **Role.** Who is reading the alerts — analyst, journalist, researcher,
+   trader, recruiter, founder, moderator, other. It tells you what "useful"
+   means to them.
+3. **What happens with an alert.** Act on it immediately · review once or
+   twice a day · collect for later research. This sets how strict to be.
+4. **Volume.** Catch everything (more noise) · balanced · only what really
+   matters. Translate it into a target number of alerts per day and say it
+   back to them.
+5. **Languages.** Which languages and scripts appear in their sources. Offer
+   the likely ones based on anything they have said, plus "Not sure — check my
+   channels".
 
-## Draft, test, then create
+If they chose "Not sure" for the goal, go to phase 3 first, then come back:
+show them what their channels are about and ask which of those themes matter.
 
-Do not create anything until it has been tested against their real messages.
-A rule that reads sensibly in the abstract routinely turns out to match
-almost entirely noise, and the user cannot know that from the wording alone.
+## Phase 3 — Sources
 
-**1. Draft the rules.** Broad, as above.
+1. Call `list_dialogs` (a high `limit`, e.g. 300) to see every chat they are in.
+2. Group them for the user: channels vs groups vs private chats, and by apparent
+   theme from their names. Show the groups as multi-select options, e.g.
+   "Security news channels (23)", "Job boards (8)", "Friends & family (41)".
+3. Recommend excluding private and personal chats unless they say otherwise;
+   rules without a scope match *every* chat, including personal ones.
+4. Ask whether any specific channels must never be missed, and whether any
+   are known to be noisy.
+5. Resolve their choice into a concrete list of chat ids for `chat_ids`, and
+   note any ids for `exclude_chat_ids`.
 
-**2. Test each one with `preview_rule`** before `add_alert_rule`. It creates
-nothing — it reports how many of their recent messages the pattern would have
-caught, which chats those came from, and a sample of the actual text.
+If their channels don't cover what they want to watch, say so plainly — the
+plugin only sees chats their account has joined — and suggest the kinds of
+channels they would need to join.
 
-Read the result honestly and tell the user what you see:
+## Phase 4 — What matters, by example
 
-- **`match_rate` above roughly 0.2** — the rule is very broad. Fine if the
-  criteria will do the filtering, expensive if judging is enabled. Say so.
-- **Zero matches** — usually a typo, or a term nobody actually writes. Try the
-  word they would really use, not the formal one.
-- **`top_chats` dominated by one channel** — that channel is about to become
-  most of their alerts. Ask whether it belongs in `exclude_chat_ids`.
+This is the most important phase, and the one that works for users who can't
+describe what they want.
 
-**3. Test the criteria against those same samples.** This is the step that
-makes criteria good. Take the messages `preview_rule` returned, and for each
-one decide how the draft criteria would rule on it. Then show the user:
+1. **Sample real messages.** Use `read_messages` on a handful of the selected
+   channels (and `search_messages` for their key names or topics) to collect
+   15–30 varied messages: some clearly on-topic, some borderline, some noise.
+2. **Ask them to react.** Present the messages in small batches (shortened to
+   a line or two each) with options per message: **Alert me · Skip · Not sure**.
+   For "Alert me", follow up in the same round: how urgent — drop everything ·
+   important · nice to know.
+3. **Ask why, briefly, on the disagreements.** When they skip something that
+   looks on-topic, or keep something that looks like noise, ask what makes the
+   difference. That sentence goes straight into a criterion.
+4. **Name the noise.** Offer the noise types you saw in their channels as a
+   multi-select, and for each ask: drop it · keep it but mark it low. Typical
+   kinds: reposts and forwards, old news resurfacing, ads and promotions,
+   opinion and commentary, recruitment posts, vague claims with no specifics,
+   duplicates across channels. Use the kinds that actually appear.
+5. **Names and entities.** Ask for (and propose, from the samples) the specific
+   organizations, people, products, handles, places and hashtags to track,
+   with any aliases, abbreviations or local-language forms they know.
 
-> Of the 12 messages this rule caught, the criteria would surface 2 and filter
-> 10. Here are the two it keeps, and here are three it drops — does that match
-> what you'd want?
+Stop when their reactions are consistent and you can predict their answer on
+a new message. If you can't yet, sample more.
 
-Their answer is the actual requirement. When they say "no, I'd want that one",
-ask what makes it different from the ones they were happy to drop — that
-difference is the sentence the criterion is missing.
+## Phase 5 — Keyword engineering
 
-**4. Iterate** until they agree with the calls on the samples. Two or three
-rounds is normal and worth the time.
+Now build the rules. **Read `keyword-engineering.md` in this skill's folder
+before starting this phase** and follow it: vocabulary discovery from their
+real messages, expansion into variants and other languages, the
+language-specific checks, and testing every rule with `preview_rule`.
 
-**5. Only now create them** with `add_alert_rule` and `add_criterion`, and
-confirm with `list_alert_rules` and `list_criteria`.
+Principles that matter most:
+
+- **Rules are broad, criteria are strict.** A rule that misses a message means
+  it is never judged. Precision belongs in the criteria.
+- Group keywords into a few rules by concept (names, topic terms, event
+  words), not one giant pattern, so each can be tested and tuned on its own.
+- Every rule gets tested on real history before it is proposed. Report the
+  match rate, the chats the matches come from, and a few sample matches.
+
+Show the user a short summary at the end: each rule's purpose, rough volume,
+and anything you deliberately left out and why. Ask only about the judgment
+calls; don't make them review raw patterns unless they want to.
+
+## Phase 6 — Criteria and calibration
+
+Write the criteria from phases 2 and 4 (see *Writing a criterion* below), then
+calibrate them on real messages:
+
+1. Take the messages the rules matched in phase 5, plus the ones the user
+   reacted to in phase 4.
+2. For each, decide how the draft criteria would rule and at what severity.
+3. Show the user the outcome in batches: "Of 20 matches, these 4 would alert
+   you, these 16 would be filtered. Here are the 4, and 4 of the filtered
+   ones." Ask: agree · this one should alert · this one shouldn't.
+4. Every disagreement becomes a sentence in a criterion. Repeat until they
+   agree with the calls. Two or three rounds is normal.
+
+Then show the **setup sheet**, one screen:
+
+- sources in scope (and excluded),
+- each rule: purpose, expected volume,
+- each criterion, including its severity levels,
+- expected alerts per day, compared with their target from phase 2,
+- **assumptions you made for them** ("Not sure" answers and your defaults),
+  each one easy to change,
+- whether judging is on (it needs `ANTHROPIC_API_KEY`), and notifications.
+
+Ask for approval, and make any changes before going on.
+
+## Phase 7 — Create
+
+Create everything with `add_alert_rule` and `add_criterion`, then confirm
+with `list_alert_rules` and `list_criteria`. Leave `notify` on only for rules
+whose alerts they want as desktop notifications.
+
+## Phase 8 — Hand-off
+
+Tell them briefly:
+
+- **Start the watcher**, or nothing is recorded — see the watcher skill. Rules
+  only see messages that arrive while it runs; use `search_messages` for
+  history.
+- **Day one is for tuning.** Tomorrow, review `list_alerts(include_irrelevant=True)`
+  together: what was kept, what was dropped and why. Missed things mean the
+  rules or criteria need loosening; noise means tightening.
+- If `monitor_status()` reports `watcher_running: false`, nothing is being
+  recorded, whatever the other tools say.
+- **Review any time** with the review skill (`/telegram-osint:review`): it
+  checks coverage, finds gaps and noise, and adjusts the setup in the same
+  question format.
 
 ## Writing a criterion
 
-State what qualifies **and** what does not. Compare:
+State what qualifies **and** what does not, and give severity levels when the
+user distinguished urgency. Compare:
 
 > Bad: `jobs` — posts about jobs.
 >
 > Good: `remote-backend-roles` — A specific open role for a backend engineer
 > that is remote or remote-friendly in Europe, posted by someone hiring for
-> it. Must name the company and the role. Excludes: recruiter cold-calls with
-> no named company, roles requiring relocation, "we're growing" posts with no
-> listing, and anyone advertising their own availability.
+> it. Must name the company and the role. High: senior roles at companies on
+> the user's list. Medium: other matching roles. Excludes: recruiter
+> cold-calls with no named company, roles requiring relocation, "we're
+> growing" posts with no listing, and anyone advertising their own
+> availability.
 
 The shape is what matters, whatever the subject: something concrete that must
-be present, and a short list of the near-misses to reject. The exclusions
-usually come straight out of step 3 — they are the messages the user just told
-you they did not want.
-
-## Finish by telling them what happens next
-
-Three things, briefly:
-
-- Rules only see messages that arrive **while the watcher is running**. For
-  history, use `search_messages`.
-- The first day is for tuning. Have them run
-  `list_alerts(include_irrelevant=True)` to see what the judge rejected and why —
-  if it is dropping things it should not, the criteria need loosening; if noise
-  gets through, they need tightening.
-- If `monitor_status()` reports `watcher_running: false`, nothing is being
-  recorded, regardless of what the other tools say.
+be present, severity levels drawn from the user's own "drop everything /
+important / nice to know" answers, and a list of near-misses to reject taken
+from the messages they skipped in phase 4.

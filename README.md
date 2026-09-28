@@ -152,9 +152,15 @@ never logged in — they only read the local database.
 
 **Skills** (plugin install only)
 
-`/telegram-osint:setup` interviews you about what you watch for and writes the
-rules and criteria. `/telegram-osint:watcher` covers starting the daemon and
-working out why alerts aren't arriving.
+`/telegram-osint:setup` walks you through a full setup: it connects Telegram,
+interviews you in multiple-choice rounds (with "suggest for me", "widen
+coverage" and "describe it in my own words" at every step), learns what you
+want from real messages in your channels, engineers and tests the keywords
+across languages, calibrates the judge on real examples, and only then creates
+the rules and criteria. `/telegram-osint:review` reports how your coverage is
+performing — gaps, noise, silent rules, questionable verdicts — and adjusts it
+in the same format, any time. `/telegram-osint:watcher` covers starting the
+daemon and working out why alerts aren't arriving.
 
 **Reading** — talks to Telegram
 
