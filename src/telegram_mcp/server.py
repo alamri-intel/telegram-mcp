@@ -19,11 +19,11 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, User
 
-from . import auth, config, db, matching
+from . import auth, config, connect, db, matching
 
 SESSION_NAME = os.environ.get("TELEGRAM_MCP_SESSION", "mcp")
 WATCHER_SESSION_NAME = os.environ.get("TELEGRAM_MCP_WATCHER_SESSION", "watcher")
@@ -125,6 +125,37 @@ async def auth_status() -> dict:
 
 
 @mcp.tool()
+async def connect_telegram(ctx: Context) -> dict:
+    """Log in to Telegram through popup forms. The easiest way to set up.
+
+    Asks the user, in forms the app shows them, for the app credentials (only
+    if not saved yet), their phone number, each login code, and their 2FA
+    password if they have one. None of these pass through the conversation,
+    so do not ask the user for them in chat. Logs in both sessions: 'mcp'
+    (read tools) and 'watcher' (monitoring). Safe to run again: sessions
+    already logged in are skipped.
+
+    If the result has a 'fallback' field, this app cannot show forms; follow
+    those instructions instead.
+    """
+    params = ctx.session.client_params
+    if not (params and params.capabilities.elicitation):
+        return {
+            "ok": False,
+            "fallback": "This app can't show login forms, so log in through the "
+                        "chat: set_api_credentials, then login_request_code and "
+                        "login_submit_code for session='mcp', and again for "
+                        "session='watcher'.",
+        }
+
+    async def ask(message, schema):
+        result = await ctx.elicit(message, schema)
+        return result.data if result.action == "accept" else None
+
+    return await connect.run(ask, [SESSION_NAME, WATCHER_SESSION_NAME])
+
+
+@mcp.tool()
 def set_api_credentials(api_id: str, api_hash: str) -> dict:
     """Save the Telegram app credentials needed before any login.
 
@@ -136,13 +167,10 @@ def set_api_credentials(api_id: str, api_hash: str) -> dict:
         api_id: numeric App api_id from my.telegram.org.
         api_hash: 32-character App api_hash from my.telegram.org.
     """
-    api_hash = api_hash.strip()
-    if not str(api_id).strip().isdigit():
-        return {"ok": False, "error": "api_id should be all digits"}
-    if len(api_hash) != 32:
-        return {"ok": False,
-                "error": f"api_hash should be 32 characters, got {len(api_hash)}"}
-    path = auth.write_api_credentials(str(api_id).strip(), api_hash)
+    error = auth.validate_api_credentials(api_id, api_hash)
+    if error:
+        return {"ok": False, "error": error}
+    path = auth.write_api_credentials(str(api_id).strip(), api_hash.strip())
     return {"ok": True, "written_to": path}
 
 

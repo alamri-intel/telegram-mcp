@@ -9,6 +9,18 @@ Your job is to turn "I want to monitor Telegram" into a working set of rules and
 criteria. Interview first, then write. Do not create anything until the user has
 seen it and agreed.
 
+## Connect first
+
+Testing rules needs a logged-in session, so start here. Call `auth_status`; if
+either session is not authorized, call `connect_telegram`. It shows the user
+popup forms for their app credentials, phone number, login codes and 2FA
+password, so **never ask for any of these in chat** — the forms keep them out
+of the conversation. If they don't have app credentials yet, tell them to get
+an API ID and hash from https://my.telegram.org (API development tools) first.
+
+If `connect_telegram` returns a `fallback`, this app can't show forms: follow
+its instructions and use the step-by-step login tools instead.
+
 ## How the two stages differ
 
 Get this distinction right, because the whole setup depends on it:
@@ -25,8 +37,10 @@ noise. If the user proposes that, say so.
 
 ## The interview
 
-Ask these in conversation, not as a form. Two or three at a time, and adapt —
-skip what they have already told you.
+If you have a tool for asking the user multiple-choice questions, use it:
+offer a few concrete suggested answers for each question, and let them write
+their own. Otherwise ask in conversation, two or three at a time. Either way,
+adapt — skip what they have already told you.
 
 1. **What are you watching, and why?** Their domain, in their words — a job
    market, a research field, a product ecosystem, a region, a community. This

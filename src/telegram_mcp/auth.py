@@ -12,6 +12,7 @@ import os
 from telethon import TelegramClient
 from telethon.errors import (
     FloodWaitError,
+    PasswordHashInvalidError,
     PhoneCodeExpiredError,
     PhoneCodeInvalidError,
     PhoneNumberInvalidError,
@@ -25,6 +26,19 @@ PENDING_KEY = "login_pending"
 
 class AuthError(RuntimeError):
     """Login could not proceed; the message is meant for the user."""
+
+
+class PasswordNeeded(AuthError):
+    """The code was accepted, but the account also has two-step verification."""
+
+
+def validate_api_credentials(api_id: str, api_hash: str) -> str | None:
+    """Why these app credentials can't be right, or None if they look valid."""
+    if not str(api_id).strip().isdigit():
+        return "api_id should be all digits"
+    if len(api_hash.strip()) != 32:
+        return f"api_hash should be 32 characters, got {len(api_hash.strip())}"
+    return None
 
 
 def write_api_credentials(api_id: str, api_hash: str) -> str:
@@ -148,7 +162,7 @@ async def submit_code(code: str, password: str | None, session: str) -> dict:
             )
         except SessionPasswordNeededError:
             if not password:
-                raise AuthError(
+                raise PasswordNeeded(
                     "This account has two-factor authentication enabled. "
                     "Call login_submit_code again with the password as well as the code."
                 ) from None
@@ -159,15 +173,31 @@ async def submit_code(code: str, password: str | None, session: str) -> dict:
             raise AuthError(
                 "That code has expired. Call login_request_code again for a new one."
             ) from None
-
-        me = await client.get_me()
-        name = " ".join(filter(None, [me.first_name, me.last_name])) or me.username
+        return await _finish_login(client, session)
     finally:
         await client.disconnect()
 
+
+async def submit_password(password: str, session: str) -> dict:
+    """Second step for a two-step-verification account, after submit_code
+    raised PasswordNeeded. The accepted code is not sent again."""
+    client = build_client(session)
+    await client.connect()
+    try:
+        try:
+            await client.sign_in(password=password)
+        except PasswordHashInvalidError:
+            raise AuthError("That password was not accepted. Check it and try again.") from None
+        return await _finish_login(client, session)
+    finally:
+        await client.disconnect()
+
+
+async def _finish_login(client: TelegramClient, session: str) -> dict:
+    me = await client.get_me()
+    name = " ".join(filter(None, [me.first_name, me.last_name])) or me.username
     with db.session() as conn:
         conn.execute("DELETE FROM state WHERE key=?", (PENDING_KEY,))
-
     return {
         "ok": True,
         "user_id": me.id,
