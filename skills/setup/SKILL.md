@@ -65,15 +65,26 @@ abstract.
 
 ## Phase 1 — Connect
 
-Call `auth_status`. If either session is not logged in, call
-`connect_telegram`. It collects the app credentials, phone number, login codes
-and 2FA password in popups — the app's own forms, or the computer's own dialog
-boxes (macOS, Windows, Linux) where the app has none — so **never ask for any
-of these in chat**. Tell the user before calling it that popups are about to
-appear, one field at a time, and that they may open behind other windows. If
-the user has no app credentials yet, tell them to get an API ID and hash from
-https://my.telegram.org (API development tools) first. If `connect_telegram`
-returns a `fallback`, this app can't show forms: follow its instructions.
+Call `auth_status`. If a session is not logged in, log it in through the chat,
+asking for one thing at a time in plain text (not multiple-choice):
+
+1. If no app credentials are saved, ask for the **API ID and API hash** from
+   https://my.telegram.org (API development tools), and save them with
+   `set_api_credentials`.
+2. Ask for the **phone number** of the Telegram account, in international
+   format.
+3. For the `mcp` session (reading) and then the `watcher` session
+   (monitoring): call `login_request_code`, ask for the code Telegram sends to
+   their Telegram app, and call `login_submit_code`. Each session gets its own,
+   different code — say so, so they use the newest one.
+4. If Telegram asks for a password, the account has two-step verification:
+   ask for it and call `login_submit_code` again with the code and password.
+
+Before starting, tell the user once, briefly, that what they type here —
+including the API hash and codes — becomes part of this conversation, and
+suggest a dedicated account rather than their personal one if they monitor
+sensitive channels. Codes expire within minutes; if one does, request a new
+one.
 
 Nothing else works until this does — phases 3 to 5 read real messages.
 

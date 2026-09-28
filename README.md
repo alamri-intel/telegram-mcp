@@ -27,13 +27,12 @@ Telegram's API and, if you enable judging, Anthropic's.
   watcher sends the text of each rule-matched message, plus your criteria,
   to Anthropic's API for a verdict. Messages that match no rule are never
   sent anywhere.
-- **Login forms.** `connect_telegram` asks for your Telegram app
-  credentials, phone number, login codes and two-step verification password
-  in popup forms your Claude app shows (MCP elicitation), or, in apps without
-  forms, in your computer's own dialog boxes: `osascript` on macOS, a Windows
-  Forms dialog through PowerShell on Windows, `zenity` on Linux. The answers
-  go straight to the local server, not into the conversation. The password is
-  passed to Telegram once to sign in and is never stored.
+- **Login happens in the chat.** You type your Telegram API ID and hash,
+  phone number, login codes and (if you have one) two-step verification
+  password into the conversation, and Claude passes them to the local
+  server. They become part of that conversation's history in your Claude
+  app. The password is passed to Telegram once to sign in and is never
+  stored.
 - **Local files.** Session files, your API credentials (`.env`, mode
   `0600`), the alerts database, and the watcher log live in
   `~/.telegram-mcp/`. Nothing is uploaded elsewhere.
@@ -50,13 +49,8 @@ Telegram's API and, if you enable judging, Anthropic's.
 | Chat on claude.ai web, desktop, or mobile | Skills only — chat can't start a local server, so the Telegram tools aren't available |
 
 **Operating systems.** Developed and tested on macOS. On Windows and Linux the
-tools, login and monitoring work, with differences:
-
-- Login popups on Windows use PowerShell and on Linux need `zenity`; both are
-  newer and less tested than the macOS dialogs. Without them, login falls
-  back to the chat.
-- Desktop notifications are macOS-only. Elsewhere alerts are still recorded
-  and listed; they just don't pop up.
+tools, login and monitoring work, but desktop notifications are macOS-only:
+elsewhere alerts are still recorded and listed, they just don't pop up.
 
 ## Install
 
@@ -186,7 +180,6 @@ create it.
 | Tool | |
 |---|---|
 | `auth_status()` | Whether credentials are saved and each session is logged in. |
-| `connect_telegram()` | Log in both sessions through popups — the app's forms, or macOS dialog boxes — keeping keys and codes out of the chat. Elsewhere it points to the tools below. |
 | `set_api_credentials(api_id, api_hash)` | Save your Telegram app credentials to `~/.telegram-mcp/.env` (mode `0600`). |
 | `login_request_code(phone)` | Ask Telegram to send a login code. |
 | `login_submit_code(code, password)` | Finish login; the session file is saved locally. |

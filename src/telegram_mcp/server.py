@@ -19,11 +19,11 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.fastmcp import FastMCP
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, User
 
-from . import auth, config, connect, db, matching
+from . import auth, config, db, matching
 
 SESSION_NAME = os.environ.get("TELEGRAM_MCP_SESSION", "mcp")
 WATCHER_SESSION_NAME = os.environ.get("TELEGRAM_MCP_WATCHER_SESSION", "watcher")
@@ -122,40 +122,6 @@ async def auth_status() -> dict:
             await auth.status(SESSION_NAME),
         ],
     }
-
-
-@mcp.tool()
-async def connect_telegram(ctx: Context) -> dict:
-    """Log in to Telegram through popup forms. The easiest way to set up.
-
-    Uses the app's own forms when it supports them, otherwise native dialog
-    boxes on macOS, Windows or Linux. Asks the user for the app credentials (only
-    if not saved yet), their phone number, each login code, and their 2FA
-    password if they have one. None of these pass through the conversation,
-    so do not ask the user for them in chat. Logs in both sessions: 'mcp'
-    (read tools) and 'watcher' (monitoring). Safe to run again: sessions
-    already logged in are skipped.
-
-    If the result has a 'fallback' field, this app cannot show forms; follow
-    those instructions instead.
-    """
-    params = ctx.session.client_params
-    if params and params.capabilities.elicitation:
-        async def ask(message, schema):
-            result = await ctx.elicit(message, schema)
-            return result.data if result.action == "accept" else None
-    elif connect.native_dialogs_available():
-        ask = connect.native_ask
-    else:
-        return {
-            "ok": False,
-            "fallback": "This app can't show login forms, so log in through the "
-                        "chat: set_api_credentials, then login_request_code and "
-                        "login_submit_code for session='mcp', and again for "
-                        "session='watcher'.",
-        }
-
-    return await connect.run(ask, [SESSION_NAME, WATCHER_SESSION_NAME])
 
 
 @mcp.tool()

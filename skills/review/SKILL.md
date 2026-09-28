@@ -19,7 +19,8 @@ option slots ran out.
 
 Call `monitor_status` and `auth_status`. If the watcher is not running, or a
 session is logged out, say so first — nothing below means much while nothing
-is being recorded. Offer to fix it (the watcher skill, or `connect_telegram`).
+is being recorded. Offer to fix it (the watcher skill, or logging the session
+back in with `login_request_code` and `login_submit_code`).
 Note whether judging is on.
 
 ## 2. Build the coverage report
