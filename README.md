@@ -52,12 +52,55 @@ Telegram's API and, if you enable judging, Anthropic's.
 tools, login and monitoring work, but desktop notifications are macOS-only:
 elsewhere alerts are still recorded and listed, they just don't pop up.
 
-## Install
+## Requirements
 
-**Requires [uv](https://docs.astral.sh/uv/).** It provisions the right Python
-version itself, so you don't need to manage one. On macOS, `brew install uv`;
-for other systems, see uv's
-[installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+Check these before installing — without **uv** the plugin's server cannot
+start, and the Telegram tools simply never appear.
+
+| | What | Needed for |
+|---|---|---|
+| **Required** | [uv](https://docs.astral.sh/uv/) on the computer running Claude | Starting the plugin's server. uv installs Python 3.10+ and the pinned packages itself. |
+| **Required** | A Telegram account and an app **API ID + API hash** from [my.telegram.org](https://my.telegram.org) (API development tools) | Logging in |
+| **Required** | Claude Code, or Cowork running **on your computer** | Local servers don't run in claude.ai chat or cloud tasks |
+| Optional | An **Anthropic API key** (a workspace key from the [Console](https://console.anthropic.com)) | Judging alerts against your criteria. Without it, every rule match becomes an alert. |
+| Optional | macOS | Desktop notifications |
+
+**Installing uv**
+
+- macOS with Homebrew: `brew install uv`
+- Windows: `winget install --id=astral-sh.uv -e`
+- Linux, or macOS without Homebrew: use your package manager, or uv's standalone
+  installer from its [installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+  (it installs to `~/.local/bin`)
+
+Then check with `uv --version`, and **fully quit and reopen your Claude app**.
+
+Two pitfalls:
+
+- **Apps launched from the Dock or Start menu may not see `~/.local/bin`** or a
+  conda/virtualenv. If `uv --version` works in a terminal but the plugin still
+  fails to connect, put uv somewhere the app can see (on macOS,
+  `sudo ln -s ~/.local/bin/uv /usr/local/bin/uv`) — don't install it with `pip`
+  into a conda environment.
+- **The first start downloads Python and ~50 packages**, which can outlast the
+  app's connection timeout. If the first connection fails, retry once.
+
+**Network access**
+
+| Host | When |
+|---|---|
+| `pypi.org`, `files.pythonhosted.org` (and uv's Python download host) | First start, and after updates |
+| Telegram's servers | Always |
+| `api.anthropic.com` | Only with judging on |
+
+Managed or corporate networks that block PyPI or inspect TLS will stop the
+first start; ask IT to allow the hosts above.
+
+**Python packages** are declared in `pyproject.toml` and pinned exactly in
+`uv.lock` (53 packages); uv installs them automatically. Direct
+dependencies: `mcp`, `telethon`, and — for judging — `anthropic` and `pydantic`.
+
+## Install
 
 As a Claude Code plugin — this is the easy path, and gives you the setup skill:
 

@@ -65,7 +65,35 @@ abstract.
 
 ## Phase 1 — Connect
 
-Call `auth_status`. If a session is not logged in, log it in through the chat,
+**First, make sure the plugin's tools are actually available.** If you don't
+have `auth_status` and the other Telegram tools, or calling one fails because
+the server isn't connected, stop and fix that before anything else — do not
+run the interview without them, because phases 3 to 5 need real messages.
+
+The cause is almost always a missing requirement:
+
+1. **uv isn't installed** (by far the most common). If you can run shell
+   commands on the user's computer, check with `command -v uv`; otherwise ask
+   them to run `uv --version` in a terminal. To install: `brew install uv` on
+   macOS with Homebrew, `winget install --id=astral-sh.uv -e` on Windows, or
+   uv's installation guide (https://docs.astral.sh/uv/getting-started/installation/)
+   otherwise. Warn them not to use `pip install uv` inside conda or a
+   virtualenv — the Claude app won't see it.
+2. **uv is installed but the app can't see it.** If `uv --version` works in a
+   terminal but the tools still don't load, uv is probably in `~/.local/bin`,
+   which apps opened from the Dock may not search. On macOS:
+   `sudo ln -s ~/.local/bin/uv /usr/local/bin/uv`.
+3. **The first start timed out** while downloading Python and packages. Retry.
+4. **The network blocks PyPI** (common on managed work devices). They'll see
+   certificate, proxy or connection errors; they need IT to allow `pypi.org`
+   and `files.pythonhosted.org`.
+5. **Wrong place to run it.** The tools only load in Claude Code, or in
+   Cowork running on their computer — not in claude.ai chat or cloud tasks.
+
+After installing uv, the user must **fully quit and reopen** the Claude app
+(or start a new session) for the tools to load.
+
+Then call `auth_status`. If a session is not logged in, log it in through the chat,
 asking for one thing at a time in plain text (not multiple-choice):
 
 1. If no app credentials are saved, ask for the **API ID and API hash** from
