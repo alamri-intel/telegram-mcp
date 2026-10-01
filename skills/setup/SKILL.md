@@ -1,9 +1,9 @@
 ---
 name: setup
-description: Set up Telegram OSINT monitoring — connect Telegram, interview the user in depth (even when they aren't sure what they need), engineer and test keyword rules against their real channels, calibrate the judge's criteria on real messages, then create everything. Use on first run, or when the user wants to rebuild or substantially change what the Telegram OSINT plugin monitors.
+description: Set up Unofficial Telegram OSINT monitoring — connect Telegram, interview the user in depth (even when they aren't sure what they need), engineer and test keyword rules against their real channels, calibrate the judge's criteria on real messages, then create everything. Use on first run, or when the user wants to rebuild or substantially change what the Unofficial Telegram OSINT plugin monitors.
 ---
 
-# Setting up Telegram OSINT monitoring
+# Setting up Unofficial Telegram OSINT monitoring
 
 Your job is to turn "I want to monitor Telegram" into a professional setup that
 needs almost no editing afterwards. That takes time and effort up front, and

@@ -1,4 +1,7 @@
-# Telegram OSINT
+# Unofficial Telegram OSINT
+
+*An unofficial, independent plugin. Not affiliated with, endorsed by or
+sponsored by Telegram.*
 
 An MCP server for your own Telegram account. Read your chats through an AI
 assistant, and run a background monitor that watches every incoming message

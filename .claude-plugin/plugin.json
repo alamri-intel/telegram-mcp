@@ -1,8 +1,8 @@
 {
   "name": "telegram-osint",
-  "displayName": "Telegram OSINT",
-  "description": "Monitor your Telegram channels. Regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria. Requires uv (docs.astral.sh/uv) on your computer. Set up with /telegram-osint:setup.",
-  "version": "0.1.5",
+  "displayName": "Unofficial Telegram OSINT",
+  "description": "Unofficial plugin, not affiliated with Telegram. Monitor your Telegram channels. Regex rules prefilter the firehose, then Claude judges each hit against your own relevance criteria. Requires uv (docs.astral.sh/uv) on your computer. Set up with /telegram-osint:setup.",
+  "version": "0.1.6",
   "author": {
     "name": "Abdul Alamri",
     "url": "https://github.com/alamri-intel"

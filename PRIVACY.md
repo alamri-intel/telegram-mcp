@@ -1,8 +1,9 @@
-# Privacy policy — Telegram OSINT
+# Privacy policy — Unofficial Telegram OSINT
 
-Last updated: 2026-09-28
+Last updated: 2026-10-01
 
-Telegram OSINT is an open-source plugin published by Abdul Alamri. It runs
+Unofficial Telegram OSINT is an open-source plugin published by Abdul Alamri,
+not affiliated with Telegram. It runs
 entirely on your own computer. The publisher operates no server and receives
 no data from you.
 

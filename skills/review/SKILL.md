@@ -1,9 +1,9 @@
 ---
 name: review
-description: Review and improve Telegram OSINT coverage at any time — show what is being monitored and how it is performing, find gaps and noise, then let the user widen coverage, cut noise, add names, topics or channels, or describe what they want, in the same popup question format as setup. Use when the user asks to review, audit, check, tune, expand or adjust their Telegram monitoring.
+description: Review and improve Unofficial Telegram OSINT coverage at any time — show what is being monitored and how it is performing, find gaps and noise, then let the user widen coverage, cut noise, add names, topics or channels, or describe what they want, in the same popup question format as setup. Use when the user asks to review, audit, check, tune, expand or adjust their Telegram monitoring.
 ---
 
-# Reviewing Telegram OSINT coverage
+# Reviewing Unofficial Telegram OSINT coverage
 
 The user wants to see how well their monitoring covers what they care about,
 and to improve it. Diagnose first, then ask what to change, then test changes
